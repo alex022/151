@@ -69,8 +69,13 @@ public class RAnode {
 	       System.out.println(e);
 	    }
 	    
-	    
-	    
-
+	  //Output from server
+	    PrintStream serverOutput;
+	    try {
+	       serverOutput = new PrintStream(serviceSocket.getOutputStream());
+	    }
+	    catch (IOException e) {
+	       System.out.println(e);
+	    }
 	}
 }
