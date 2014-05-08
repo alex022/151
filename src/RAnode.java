@@ -41,25 +41,27 @@ public class RAnode {
 				clearWrite.close();
 				
 				System.out.println("Node 1 being initialized");
-				firstNode = new ServerSocket(5000); 
-				secondNode = new ServerSocket(5001);
-				thirdNode = new ServerSocket(5002);
+				firstNode = new ServerSocket(5000);
+				second = new Socket("192.168.56.1", 5001);
+				//secondNode = new ServerSocket(5001);
+				//thirdNode = new ServerSocket(5002);
 				first = firstNode.accept();
-				second = secondNode.accept();
-				third = thirdNode.accept();
+				/*second = secondNode.accept();
+				System.out.println("second accepted");
+				third = thirdNode.accept();*/
 				System.out.println("Node 1 has been initialized");
 			}
 			else if(node == 2){
 				System.out.println("Node 2 being initialized");
 				first = new Socket("", 5000); 
 				secondNode = new ServerSocket(5001);
-				thirdNode = new ServerSocket(5002);
+				//thirdNode = new ServerSocket(5002);
 
 				second = secondNode.accept();
-				third = thirdNode.accept();
+				//third = thirdNode.accept();
 				System.out.println("Node 2 has been initialized");
 			}
-			else if(node == 3){
+			/*else if(node == 3){
 				System.out.println("Node 3 being initialized");
 				first = new Socket("",5001);
 				second = new Socket("",5001);
@@ -68,21 +70,21 @@ public class RAnode {
 				third = thirdNode.accept();
 				System.out.println("Node 3 has been initialized");
 			}
-			else
+			else*/
 			{
 				first = new Socket("", 5002);
 				second = new Socket("", 5002);
-				third = new Socket("", 5002);
+				//third = new Socket("", 5002);
 			}
 			System.out.println("Sockets have been successfully set");
 			
 			//Creation of the writers and readers
 			w1 = new PrintWriter(first.getOutputStream(), true);
 			w2 = new PrintWriter(second.getOutputStream(), true);
-			w3 = new PrintWriter(third.getOutputStream(), true);
+			//w3 = new PrintWriter(third.getOutputStream(), true);
 			in1 = new BufferedReader(new InputStreamReader(first.getInputStream()));
 			in2 = new BufferedReader(new InputStreamReader(second.getInputStream()));
-			in3 = new BufferedReader(new InputStreamReader(third.getInputStream()));
+			//in3 = new BufferedReader(new InputStreamReader(third.getInputStream()));
 			
 			outputStreams.add(w1);
 			outputStreams.add(w2);
@@ -100,8 +102,8 @@ public class RAnode {
 			Thread tr2 = new Thread(new ChannelHandler(second));
 			tr2.start();
 
-			Thread tr3 = new Thread(new ChannelHandler(third));
-			tr3.start();
+			//Thread tr3 = new Thread(new ChannelHandler(third));
+			//tr3.start();
 		} catch(Exception e){}
 		
 		while(numWrites < 3){
@@ -138,7 +140,6 @@ public class RAnode {
 	
 	public void request()
 	{
-
 		me.invocation();
 
 		//After invocation returns, we can safely call CS
