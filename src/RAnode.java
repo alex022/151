@@ -19,10 +19,12 @@ public class RAnode {
 	
 	int numWrites;
 	RA_Algorithm me;
+	int node;
 	
-	public RAnode() {	
+	public RAnode(String arg[]) {	
 		
 		numWrites = 0;
+		node = Integer.parseInt(arg[0]);
 		
 		//Initialize peer sockets
 		try{
@@ -33,13 +35,30 @@ public class RAnode {
 			Socket second;
 			Socket third;
 			
-			//Creates two client sockets and one server socket for the node
-			first = new Socket("",5000);
-			second = new Socket("",5000);
-			thirdNode = new ServerSocket(5001);
-			
-			third = thirdNode.accept();
-			
+			if(node == 1){
+				firstNode = new ServerSocket(5000); 
+				secondNode = new ServerSocket(5001);
+				thirdNode = new ServerSocket(5002);
+				first = firstNode.accept();
+				second = secondNode.accept();
+				third = thirdNode.accept();
+				System.out.println("Node 1 initialized");
+			}else if(node == 2){
+				first = new Socket("", 5000); 
+				secondNode = new ServerSocket(5001);
+				thirdNode = new ServerSocket(5002);
+
+				second = secondNode.accept();
+				third = thirdNode.accept();
+				System.out.println("Node 2 initialized");
+			}else if(node == 3){
+				first = new Socket("",5001);
+				second = new Socket("",5001);
+				thirdNode = new ServerSocket(5002);
+				
+				third = thirdNode.accept();
+				System.out.println("Node 3 initialized");
+			}			
 			System.out.println("Sockets have been successfully set");
 			
 			//Creation of the writers and readers
@@ -54,7 +73,7 @@ public class RAnode {
 			outputStreams.add(w2);
 			outputStreams.add(w3);
 			
-			me = new RA_Algorithm(nodeNum, 0, this);
+			me = new RA_Algorithm(node, 0, this);
 			me.w[0] = w1;
 			me.w[1] = w2;
 			me.w[2] = w3;
@@ -172,8 +191,8 @@ public class RAnode {
 		}
 	}
 	
-	public static void main(String[] args) 
+	public static void main(String[] arg) 
 	{
-		new RAnode();
+		new RAnode(arg);
 	}
 }
