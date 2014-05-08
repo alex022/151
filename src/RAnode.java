@@ -36,29 +36,44 @@ public class RAnode {
 			Socket third;
 			
 			if(node == 1){
+				BufferedWriter clearWrite = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt"));
+				clearWrite.write("\n");
+				clearWrite.close();
+				
+				System.out.println("Node 1 being initialized");
 				firstNode = new ServerSocket(5000); 
 				secondNode = new ServerSocket(5001);
 				thirdNode = new ServerSocket(5002);
 				first = firstNode.accept();
 				second = secondNode.accept();
 				third = thirdNode.accept();
-				System.out.println("Node 1 initialized");
-			}else if(node == 2){
+				System.out.println("Node 1 has been initialized");
+			}
+			else if(node == 2){
+				System.out.println("Node 2 being initialized");
 				first = new Socket("", 5000); 
 				secondNode = new ServerSocket(5001);
 				thirdNode = new ServerSocket(5002);
 
 				second = secondNode.accept();
 				third = thirdNode.accept();
-				System.out.println("Node 2 initialized");
-			}else if(node == 3){
+				System.out.println("Node 2 has been initialized");
+			}
+			else if(node == 3){
+				System.out.println("Node 3 being initialized");
 				first = new Socket("",5001);
 				second = new Socket("",5001);
 				thirdNode = new ServerSocket(5002);
 				
 				third = thirdNode.accept();
-				System.out.println("Node 3 initialized");
-			}			
+				System.out.println("Node 3 has been initialized");
+			}
+			else
+			{
+				first = new Socket("", 5002);
+				second = new Socket("", 5002);
+				third = new Socket("", 5002);
+			}
 			System.out.println("Sockets have been successfully set");
 			
 			//Creation of the writers and readers
@@ -100,18 +115,18 @@ public class RAnode {
 	}
 	
 	//Critical section call
-	public static boolean criticalSection(int numbWrites)
+	public static boolean criticalSection(int node, int numbWrites)
 	{
-		System.out.println("Node has entered critical section");
+		System.out.println("Node" + node + "has entered critical section");
 		try
 		{
 			BufferedWriter criticalSection = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt", true));
 
-			criticalSection.write("Node has started critical section access");
+			criticalSection.write(node + "has started critical section access");
 			criticalSection.newLine();
 			Thread.sleep(100);
 			//criticalSection.write(nodeName + " has now accessed it's critical section " + numberOfWrites + " times.");
-			criticalSection.write("Node has ended critical section access");
+			criticalSection.write(node + "has ended critical section access");
 			criticalSection.newLine();
 			criticalSection.newLine();
 			criticalSection.flush(); //flush stream
@@ -127,7 +142,7 @@ public class RAnode {
 		me.invocation();
 
 		//After invocation returns, we can safely call CS
-		criticalSection(numWrites);
+		criticalSection(node, numWrites);
 
 		//Once we are done with CS, release CS
 		me.releaseCS();
@@ -164,7 +179,7 @@ public class RAnode {
 				//As long as this reader is open, will take action the moment a message arrives.
 				while(( message = reader.readLine() ) != null)
 				{
-					System.out.println("Node has received message: " + message);
+					System.out.println(node + "has received message: " + message);
 
 					//Tokenize our message to determine RicartAgrawala step
 
