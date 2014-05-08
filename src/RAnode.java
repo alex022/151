@@ -51,6 +51,6 @@ public class RAnode {
 	}
 	public static void main(String[] args) 
 	{
-		new RAnode();	
+		new RAnode();
 	}
 }
