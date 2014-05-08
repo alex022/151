@@ -9,41 +9,13 @@ import java.net.Socket;
 public class RAnode {
 	
 	static Socket clientSocket;
-	static ServerSocket serverSocket;
-	static Socket serviceSocket; 
+	static ServerSocket serverSocket; 
 	DataInputStream dis; 
 	InetAddress address; 
 	static int portNumber;
 	
 	public static void main(String[] args)
 	{
-		
-		//Initialize client socket
-		try {
-	           clientSocket = new Socket("Machine name", portNumber);
-	    }
-	    catch (IOException e) {
-	        System.out.println(e);
-	    }
-		
-		//Input to client
-	    DataInputStream clientInput;
-	    try {
-	       clientInput = new DataInputStream(clientSocket.getInputStream());
-	    }
-	    catch (IOException e) {
-	       System.out.println(e);
-	    }
-	    
-	    //Output from client 
-	    PrintStream clientOutput;
-	    try {
-	       clientOutput = new PrintStream(clientSocket.getOutputStream());
-	    }
-	    catch (IOException e) {
-	       System.out.println(e);
-	    }
-		
 		//Initialize server socket
 		try {
 		       serverSocket = new ServerSocket(portNumber);
@@ -54,25 +26,25 @@ public class RAnode {
 		
 		//Accept connections from clients
 		try {
-		      serviceSocket = serverSocket.accept();
+		      clientSocket = serverSocket.accept();
 		       }
 		   catch (IOException e) {
 		      System.out.println(e);
 		   }
 			
-		//Input to server
+		//Input
 		DataInputStream serverInput;
 	    try {
-	       serverInput = new DataInputStream(serviceSocket.getInputStream());
+	       serverInput = new DataInputStream(clientSocket.getInputStream());
 	    }
 	    catch (IOException e) {
 	       System.out.println(e);
 	    }
 	    
-	  //Output from server
+	    //Output
 	    PrintStream serverOutput;
 	    try {
-	       serverOutput = new PrintStream(serviceSocket.getOutputStream());
+	       serverOutput = new PrintStream(clientSocket.getOutputStream());
 	    }
 	    catch (IOException e) {
 	       System.out.println(e);
