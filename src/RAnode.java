@@ -142,10 +142,13 @@ public class RAnode {
 		me.invocation();
 
 		//After invocation returns, we can safely call CS
+		System.out.println("OK!");
 		criticalSection(node, numWrites);
+		
 
 		//Once we are done with CS, release CS
 		me.releaseCS();
+		System.out.println("Critical section released");
 	}
 	
 	class ChannelHandler implements Runnable
