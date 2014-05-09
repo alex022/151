@@ -1,14 +1,14 @@
 import java.io.*;
 
 
-public class RA_Algorithm {
+public class RA_Algorithm extends base {
 
-	public boolean bRequestingCS;
-	public int outstandingReplies;
-	public int highestSeqNum;
-	public int seqNum;
-	public int nodeNum;
-	public RAnode driverModule;
+	public boolean requesting;
+	public int numReplies;
+	public int topSeq;
+	public int seq;
+	public int node;
+	public RAnode driver;
 
 	//Holds our writers to use
 	public PrintWriter[] w;
@@ -18,20 +18,20 @@ public class RA_Algorithm {
 
 	public boolean[] replyDeferred;
 
-	public RA_Algorithm(int nodeNum, int seqNum, RAnode driverModule){
-		bRequestingCS = false;
+	public RA_Algorithm(int node, int seq, RAnode driver){
+		requesting = false;
 
-		outstandingReplies = channelCount;
+		numReplies = channelCount;
 
-		highestSeqNum = 0;
-		this.seqNum = seqNum;
-		this.driverModule = driverModule;
+		topSeq = 0;
+		this.seq = seq;
+		this.driver = driver;
 
 		w = new PrintWriter[channelCount];
 
 		// Node number is also used for priority (low node # == higher priority in RicartAgrawala scheme)
 		// Node numbers are [1,channelCount]; since we're starting at 1 check for errors trying to access node '0'.
-		this.nodeNum = nodeNum;
+		this.node = node;
 
 		replyDeferred = new boolean[channelCount];
 	}
@@ -39,18 +39,18 @@ public class RA_Algorithm {
 	/** Invocation (begun in driver module with request CS) */
 	public boolean invocation(){
 
-		bRequestingCS = true;
-		seqNum = highestSeqNum + 1;
+		requesting = true;
+		seq = topSeq + 1;
 
-		outstandingReplies = channelCount;
+		numReplies = channelCount;
 
 		for(int i = 1; i <= channelCount + 1; i++){
-			if(i != nodeNum){
-				requestTo(seqNum, nodeNum, i);
+			if(i != node){
+				requestTo(seq, node, i);
 			}
 		}
 
-		while(outstandingReplies > 0)
+		while(numReplies > 0)
 		{
 			try{
 				Thread.sleep(5);
@@ -71,12 +71,12 @@ public class RA_Algorithm {
 	// The other half of invocation
 	public void releaseCS()
 	{
-		bRequestingCS = false;
+		requesting = false;
 
 		for(int i = 0; i < channelCount; i++){
 			if(replyDeferred[i]){
 				replyDeferred[i] = false;
-				if(i < (nodeNum - 1))
+				if(i < (node - 1))
 					replyTo(i + 1);
 				else
 					replyTo(i + 2);
@@ -91,20 +91,23 @@ public class RA_Algorithm {
 	 * 
 	 */
 	public void receiveRequest(int j, int k){
-		System.out.println("Received request from node " + k);
+		System.out.println(stamp + ":" + "Received request from node " + k);
+		stamp++;
 		boolean bDefer = false;
 
-		highestSeqNum = Math.max(highestSeqNum, j);
-		bDefer = bRequestingCS && ((j > seqNum) || (j == seqNum && k > nodeNum));
+		topSeq = Math.max(topSeq, j);
+		bDefer = requesting && ((j > seq) || (j == seq && k > node));
 		if(bDefer){
-			System.out.println("Deferred sending message to " + k);
-			if(k > nodeNum)
+			//System.out.println(stamp + ":" + "Deferred sending message to " + k);
+			stamp++;
+			if(k > node)
 				replyDeferred[k - 2] = true;
 			else
 				replyDeferred[k - 1] = true;
 		}
 		else{ 
-			System.out.println("Sent reply message to " + k);
+			System.out.println(stamp + ":" + "Sent reply message to " + k);
+			stamp++;
 			replyTo(k);
 		}
 
@@ -112,14 +115,16 @@ public class RA_Algorithm {
 
 	/** Receiving Replies */
 	public void receiveReply(){
-		outstandingReplies = Math.max((outstandingReplies - 1), 0);
-		System.out.println("Outstanding replies: " + outstandingReplies);
+		numReplies = Math.max((numReplies - 1), 0);
+		System.out.println(stamp + ":" + "Outstanding replies: " + numReplies);
+		stamp++;
 	}
 
 	public void replyTo(int k)
 	{
-		System.out.println("Sending REPLY to node " + k);
-		if(k > nodeNum)
+		System.out.println(stamp + ":" + "Sending REPLY to node " + k);
+		stamp++;
+		if(k > node)
 		{
 			w[k-2].println("REPLY," + k);
 		}
@@ -129,16 +134,17 @@ public class RA_Algorithm {
 		}
 	}
 
-	public void requestTo(int seqNum, int nodeNum, int i)
+	public void requestTo(int seq, int node, int i)
 	{
-		System.out.println("Sending REQUEST to node " + (((i))));
-		if(i > nodeNum)
+		System.out.println(stamp + ":" + "Sending REQUEST to node " + (((i))));
+		stamp++;
+		if(i > node)
 		{
-			w[i-2].println("REQUEST," + seqNum + "," + nodeNum);
+			w[i-2].println("REQUEST," + seq + "," + node);
 		}
 		else
 		{
-			w[i-1].println("REQUEST," + seqNum + "," + nodeNum);
+			w[i-1].println("REQUEST," + seq + "," + node);
 		}
 	}
 

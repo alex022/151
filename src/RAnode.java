@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 
-public class RAnode {
+public class RAnode extends base{
 	//writers
 	PrintWriter w1;
 	PrintWriter w2;
@@ -16,13 +16,13 @@ public class RAnode {
 	BufferedReader in2;
 	
 	int numWrites;
-	RA_Algorithm me;
+	static RA_Algorithm me;
 	int node;
-	long wait;
+	
 	
 	public RAnode(String arg[]) {	
-		
 		numWrites = 0;
+		stamp = 0;
 		node = Integer.parseInt(arg[0]);
 		
 		//Initialize peer sockets
@@ -35,50 +35,60 @@ public class RAnode {
 			Socket third;
 			
 			if(node == 1){
-				wait = 1000;
 				BufferedWriter clearWrite = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt"));
 				clearWrite.write("\n");
 				clearWrite.close();
 				
-				System.out.println("Node 1 being initialized");
+				System.out.println(stamp + ":" + "Node 1 being initialized");
+				stamp++;
 				
 				firstNode = new ServerSocket(5000); //serversocket for node 2
 				secondNode = new ServerSocket(5001); //serversocket for node 3
 				
 				first = firstNode.accept();
-				System.out.println("Connected to node 2");
+				System.out.println(stamp + ":" + "Connected to node 2");
+				stamp++;
 				
 				second = secondNode.accept();
-				System.out.println("Connected to node 3");
+				System.out.println(stamp + ":" + "Connected to node 3");
+				stamp++;
 				
-				System.out.println("Node 1 has been initialized");
+				System.out.println(stamp + ":" + "Node 1 has been initialized");
+				stamp++;
 			}
 			else if(node == 2){
-				wait = 2000;
-				System.out.println("Node 2 being initialized");
+				System.out.println(stamp + ":" + "Node 2 being initialized");
+				stamp++;
 				
 				first = new Socket("cartman.cs.ucsb.edu", 5000); //connect to node 1
-				System.out.println("Connected to node 1");
+				System.out.println(stamp + ":" + "Connected to node 1");
+				stamp++;
 				
 				secondNode = new ServerSocket(5001); //serversocket for node 3
 				second = secondNode.accept();
-				System.out.println("Connected to node 3");
+				System.out.println(stamp + ":" + "Connected to node 3");
+				stamp++;
 				
-				System.out.println("Node 2 has been initialized");
+				System.out.println(stamp + ":" + "Node 2 has been initialized");
+				stamp++;
 			}
 			else{
-				wait = 3000;
-				System.out.println("Node 3 being initialized");
+				System.out.println(stamp + ":" + "Node 3 being initialized");
+				stamp++;
 				
 				first = new Socket("cartman.cs.ucsb.edu",5001); //connect to node 1
-				System.out.println("Connected to node 1");
+				System.out.println(stamp + ":" + "Connected to node 1");
+				stamp++;
 				
 				second = new Socket("bart.cs.ucsb.edu",5001); //connect to node 2
-				System.out.println("Connected to node 2");
+				System.out.println(stamp + ":" + "Connected to node 2");
+				stamp++;
 				
-				System.out.println("Node 3 has been initialized");
+				System.out.println(stamp + ":" + "Node 3 has been initialized");
+				stamp++;
 			}
-			System.out.println("Sockets have been successfully set");
+			System.out.println(stamp + ":" + "Sockets have been successfully set");
+			stamp++;
 			
 			//Creation of the writers and readers
 			w1 = new PrintWriter(first.getOutputStream(), true);
@@ -109,14 +119,21 @@ public class RAnode {
 			try{
 				for(int t = 0; t < 3; t++){
 					long sub = System.currentTimeMillis();
-					while((System.currentTimeMillis() - sub) < wait){
+					while((System.currentTimeMillis() - sub) < 1000){
 					
 					}
-					System.out.println("");
+					System.out.println(stamp + ":" + "");
+					stamp++;
 				}
-				System.out.println("Critical section requested");
+				System.out.println(stamp + ":" + "Critical section requested");
+				stamp++;
 				request();
-				Thread.sleep(1000);
+				if(node == 1)
+					Thread.sleep(1000);
+				else if(node == 2)
+					Thread.sleep(1500);
+				else
+					Thread.sleep(2000);
 
 			} catch(Exception e){}
 		}
@@ -125,7 +142,8 @@ public class RAnode {
 	//Critical section call
 	public static boolean criticalSection(int node, int numWrites)
 	{
-		System.out.println("Node" + node + "has entered critical section");
+		System.out.println(stamp + ":" + "Node" + node + "has entered critical section");
+		stamp++;
 		try
 		{
 			BufferedWriter criticalSection = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt", true));
@@ -149,13 +167,15 @@ public class RAnode {
 		me.invocation();
 
 		//After invocation returns, we can safely call CS
-		System.out.println("OK!");
+		System.out.println(stamp + ":" + "OK!");
+		stamp++;
 		criticalSection(node, numWrites);
 		
 
 		//Once we are done with CS, release CS
 		me.releaseCS();
-		System.out.println("Critical section released");
+		System.out.println(stamp + ":" + "Critical section released");
+		stamp++;
 	}
 	
 	class ChannelHandler implements Runnable
@@ -189,7 +209,8 @@ public class RAnode {
 				//As long as this reader is open, will take action the moment a message arrives.
 				while(( message = reader.readLine() ) != null)
 				{
-					System.out.println(node + "has received message: " + message);
+					System.out.println(stamp + ":" + node + "has received message: " + message);
+					stamp++;
 
 					//Tokenize our message to determine RicartAgrawala step
 
