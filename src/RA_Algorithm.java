@@ -14,7 +14,7 @@ public class RA_Algorithm {
 	public PrintWriter[] w;
 
 	//Hard coded to 3 right now, for 3 other nodes in network
-	public int channelCount = 3;
+	public int channelCount = 2;
 
 	public boolean[] replyDeferred;
 
@@ -49,7 +49,6 @@ public class RA_Algorithm {
 				requestTo(seqNum, nodeNum, i);
 			}
 		}
-
 
 		while(outstandingReplies > 0)
 		{
@@ -114,7 +113,7 @@ public class RA_Algorithm {
 	/** Receiving Replies */
 	public void receiveReply(){
 		outstandingReplies = Math.max((outstandingReplies - 1), 0);
-		//System.out.println("Outstanding replies: " + outstandingReplies);
+		System.out.println("Outstanding replies: " + outstandingReplies);
 	}
 
 	public void replyTo(int k)
