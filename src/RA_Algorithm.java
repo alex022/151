@@ -3,35 +3,33 @@ import java.io.*;
 
 public class RA_Algorithm extends base {
 
-	public boolean requesting;
-	public int numReplies;
-	public int topSeq;
-	public int seq;
-	public int node;
-	public RAnode driver;
+	public boolean bRequestingCS;
+	public int outstandingReplies;
+	public int highestSeqNum;
+	public int seqNum;
+	public int nodeNum;
+	public RAnode driverModule;
 
 	//Holds our writers to use
 	public PrintWriter[] w;
 
-	//Hard coded to 3 right now, for 3 other nodes in network
+	//Number of peers each node has
 	public int channelCount = 2;
 
 	public boolean[] replyDeferred;
 
-	public RA_Algorithm(int node, int seq, RAnode driver){
-		requesting = false;
+	public RA_Algorithm(int nodeNum, int seqNum, RAnode driverModule){
+		bRequestingCS = false;
 
-		numReplies = channelCount;
+		outstandingReplies = channelCount;
 
-		topSeq = 0;
-		this.seq = seq;
-		this.driver = driver;
+		highestSeqNum = 0;
+		this.seqNum = seqNum;
+		this.driverModule = driverModule;
 
 		w = new PrintWriter[channelCount];
 
-		// Node number is also used for priority (low node # == higher priority in RicartAgrawala scheme)
-		// Node numbers are [1,channelCount]; since we're starting at 1 check for errors trying to access node '0'.
-		this.node = node;
+		this.nodeNum = nodeNum;
 
 		replyDeferred = new boolean[channelCount];
 	}
@@ -39,18 +37,19 @@ public class RA_Algorithm extends base {
 	/** Invocation (begun in driver module with request CS) */
 	public boolean invocation(){
 
-		requesting = true;
-		seq = topSeq + 1;
+		bRequestingCS = true;
+		seqNum = highestSeqNum + 1;
 
-		numReplies = channelCount;
+		outstandingReplies = channelCount;
 
 		for(int i = 1; i <= channelCount + 1; i++){
-			if(i != node){
-				requestTo(seq, node, i);
+			if(i != nodeNum){
+				requestTo(seqNum, nodeNum, i);
 			}
 		}
 
-		while(numReplies > 0)
+		//Makes node wait until replies come from all peer nodes
+		while(outstandingReplies > 0)
 		{
 			try{
 				Thread.sleep(5);
@@ -59,24 +58,19 @@ public class RA_Algorithm extends base {
 			catch(Exception e){
 
 			}
-			/*wait until we have replies from all other processes */
 		}
 
-		//We return when ready to enter CS
 		return true;
-
-
 	}
 
-	// The other half of invocation
 	public void releaseCS()
 	{
-		requesting = false;
+		bRequestingCS = false;
 
 		for(int i = 0; i < channelCount; i++){
 			if(replyDeferred[i]){
 				replyDeferred[i] = false;
-				if(i < (node - 1))
+				if(i < (nodeNum - 1))
 					replyTo(i + 1);
 				else
 					replyTo(i + 2);
@@ -84,39 +78,20 @@ public class RA_Algorithm extends base {
 		}
 	}
 
-	/** Receiving Request 
-	 * 
-	 *	@param	j	The incoming message's sequence number
-	 *	@param	k	The incoming message's node number 
-	 * 
-	 */
+	// Receiving requests
 	public void receiveRequest(int j, int k){
 		System.out.println(stamp + ":" + "Received request from node " + k);
 		stamp++;
-		boolean bDefer = false;
 
-		topSeq = Math.max(topSeq, j);
-		bDefer = requesting && ((j > seq) || (j == seq && k > node));
-		if(bDefer){
-			//System.out.println(stamp + ":" + "Deferred sending message to " + k);
-			stamp++;
-			if(k > node)
-				replyDeferred[k - 2] = true;
-			else
-				replyDeferred[k - 1] = true;
-		}
-		else{ 
-			System.out.println(stamp + ":" + "Sent reply message to " + k);
-			stamp++;
-			replyTo(k);
-		}
-
+		System.out.println(stamp + ":" + "Sent reply message to " + k);
+		stamp++;
+		replyTo(k);
 	}
 
-	/** Receiving Replies */
+	// Receiving replies
 	public void receiveReply(){
-		numReplies = Math.max((numReplies - 1), 0);
-		System.out.println(stamp + ":" + "Outstanding replies: " + numReplies);
+		outstandingReplies = Math.max((outstandingReplies - 1), 0);
+		System.out.println(stamp + ":" + "Outstanding replies: " + outstandingReplies);
 		stamp++;
 	}
 
@@ -124,7 +99,7 @@ public class RA_Algorithm extends base {
 	{
 		System.out.println(stamp + ":" + "Sending REPLY to node " + k);
 		stamp++;
-		if(k > node)
+		if(k > nodeNum)
 		{
 			w[k-2].println("REPLY," + k);
 		}
@@ -134,17 +109,17 @@ public class RA_Algorithm extends base {
 		}
 	}
 
-	public void requestTo(int seq, int node, int i)
+	public void requestTo(int seqNum, int nodeNum, int i)
 	{
 		System.out.println(stamp + ":" + "Sending REQUEST to node " + (((i))));
 		stamp++;
-		if(i > node)
+		if(i > nodeNum)
 		{
-			w[i-2].println("REQUEST," + seq + "," + node);
+			w[i-2].println("REQUEST," + seqNum + "," + nodeNum);
 		}
 		else
 		{
-			w[i-1].println("REQUEST," + seq + "," + node);
+			w[i-1].println("REQUEST," + seqNum + "," + nodeNum);
 		}
 	}
 

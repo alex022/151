@@ -29,15 +29,11 @@ public class RAnode extends base{
 		try{
 			ServerSocket firstNode;
 			ServerSocket secondNode;
-			ServerSocket thirdNode;
+
 			Socket first;
 			Socket second;
-			Socket third;
 			
 			if(node == 1){
-				BufferedWriter clearWrite = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt"));
-				clearWrite.write("\n");
-				clearWrite.close();
 				
 				System.out.println(stamp + ":" + "Node 1 being initialized");
 				stamp++;
@@ -132,34 +128,11 @@ public class RAnode extends base{
 					Thread.sleep(1000);
 				else if(node == 2)
 					Thread.sleep(1500);
-				else
-					Thread.sleep(2000);
+				else if(node == 3)
+					Thread.sleep(2500);
 
 			} catch(Exception e){}
 		}
-	}
-	
-	//Critical section call
-	public static boolean criticalSection(int node, int numWrites)
-	{
-		System.out.println(stamp + ":" + "Node" + node + "has entered critical section");
-		stamp++;
-		try
-		{
-			BufferedWriter criticalSection = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt", true));
-
-			criticalSection.write(node + "has started critical section access");
-			criticalSection.newLine();
-			Thread.sleep(100);
-			//criticalSection.write(nodeName + " has now accessed it's critical section " + numberOfWrites + " times.");
-			criticalSection.write(node + "has ended critical section access");
-			criticalSection.newLine();
-			criticalSection.newLine();
-			criticalSection.flush(); //flush stream
-			criticalSection.close(); //close write
-		} 
-		catch(Exception e){ System.out.println("Wrong");}
-		return true;
 	}
 	
 	public void request()
@@ -168,9 +141,7 @@ public class RAnode extends base{
 
 		//After invocation returns, we can safely call CS
 		System.out.println(stamp + ":" + "OK!");
-		stamp++;
-		criticalSection(node, numWrites);
-		
+		stamp++;	
 
 		//Once we are done with CS, release CS
 		me.releaseCS();
@@ -198,8 +169,6 @@ public class RAnode extends base{
 			}
 		}
 
-		/** Continuously runs and reads all incoming messages, passing messages to ME */
-
 		public void run()
 		{
 			String message;
@@ -209,7 +178,7 @@ public class RAnode extends base{
 				//As long as this reader is open, will take action the moment a message arrives.
 				while(( message = reader.readLine() ) != null)
 				{
-					System.out.println(stamp + ":" + node + "has received message: " + message);
+					System.out.println(stamp + ":Node " + node + " has received message: " + message);
 					stamp++;
 
 					//Tokenize our message to determine RicartAgrawala step
@@ -219,13 +188,10 @@ public class RAnode extends base{
 
 					if(messageType.equals("REQUEST"))
 					{
-						/*We are receiving request(j,k) where j is a seq# and k a node#.
-						  This call will decide to defer or ack with a reply. */
 						me.receiveRequest(Integer.parseInt(tokens[1]), Integer.parseInt(tokens[2]));
 					}
 					else if(messageType.equals("REPLY"))
 					{
-						/* Received a reply. We'll decrement our outstanding replies */
 						me.receiveReply();
 					}
 				}
