@@ -18,6 +18,7 @@ public class RAnode {
 	int numWrites;
 	RA_Algorithm me;
 	int node;
+	long wait;
 	
 	public RAnode(String arg[]) {	
 		
@@ -34,6 +35,7 @@ public class RAnode {
 			Socket third;
 			
 			if(node == 1){
+				wait = 1000;
 				BufferedWriter clearWrite = new BufferedWriter(new FileWriter("CriticalSectionOutput.txt"));
 				clearWrite.write("\n");
 				clearWrite.close();
@@ -52,6 +54,7 @@ public class RAnode {
 				System.out.println("Node 1 has been initialized");
 			}
 			else if(node == 2){
+				wait = 2000;
 				System.out.println("Node 2 being initialized");
 				
 				first = new Socket("cartman.cs.ucsb.edu", 5000); //connect to node 1
@@ -64,6 +67,7 @@ public class RAnode {
 				System.out.println("Node 2 has been initialized");
 			}
 			else{
+				wait = 3000;
 				System.out.println("Node 3 being initialized");
 				
 				first = new Socket("cartman.cs.ucsb.edu",5001); //connect to node 1
@@ -101,18 +105,25 @@ public class RAnode {
 			
 		} catch(Exception e){}
 		
-		while(numWrites < 3){
+		while(true){
 			try{
-				//System.out.println("Critical section requested");
+				for(int t = 0; t < 3; t++){
+					long sub = System.currentTimeMillis();
+					while((System.currentTimeMillis() - sub) < wait){
+					
+					}
+					System.out.println("");
+				}
+				System.out.println("Critical section requested");
 				request();
-				numWrites++;
-				Thread.sleep(250);
+				Thread.sleep(1000);
+
 			} catch(Exception e){}
 		}
 	}
 	
 	//Critical section call
-	public static boolean criticalSection(int node, int numbWrites)
+	public static boolean criticalSection(int node, int numWrites)
 	{
 		System.out.println("Node" + node + "has entered critical section");
 		try
